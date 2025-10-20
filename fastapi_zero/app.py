@@ -120,11 +120,14 @@ def delete_user(user_id: int, session: Session = Depends(get_session)):
     return {'message': 'User deleted'}
 
 
-# # Endpoint GET para users/{id}
-# @app.get('/users/{user_id}', response_model=UserPublic)
-# def read_user(user_id: int):
-#     if user_id < 1 or user_id > len(database):
-#         raise HTTPException(
-#             status_code=HTTPStatus.NOT_FOUND, detail='User not found'
-#         )
-#     return database[user_id - 1]
+# Endpoint GET para users/{id}
+@app.get('/users/{user_id}', response_model=UserPublic)
+def read_user(user_id: int, session: Session = Depends(get_session)):
+
+    user_db = session.scalar(select(User).where(User.id == user_id))
+
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='User not found'
+        )
+    return user_db

@@ -78,16 +78,8 @@ def test_update_user(client, user):
     }
 
 
-# Teste 404 para endpoint DELETE
-def test_delete_user_not_found(client):
-    response = client.delete('/users/57')
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
-
-
 # Teste 404 para endpoint PUT
-def test_update_user_not_found(client):
+def test_update_user_not_found_ex01_aula_03(client):
     response = client.put(
         '/users/57',
         json={
@@ -100,24 +92,32 @@ def test_update_user_not_found(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-# Teste 200 para endpoint GET users/{id}
-# def test_read_user(client):
-#     response = client.get('/users/1')
+# Teste 404 para endpoint DELETE
+def test_delete_user_not_found_ex02_aula_03(client):
+    response = client.delete('/users/57')
 
-#     assert response.status_code == HTTPStatus.OK
-#     assert response.json() == {
-#         'username': 'bob',
-#         'email': 'bob@example.com',
-#         'id': 1,
-#     }
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
+
+
+# Teste 200 para endpoint GET users/{id}
+def test_get_user_id_ex03_aula03(client, user):
+    response = client.get(f'/users/{user.id}')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'username': user.username,
+        'email': user.email,
+        'id': user.id,
+    }
 
 
 # Teste 404 para endpoint GET users/{id}
-# def test_read_user_not_found(client):
-#     response = client.get('/users/57')
+def test_get_user_id_not_found_ex03_aula03(client):
+    response = client.get('/users/57')
 
-#     assert response.status_code == HTTPStatus.NOT_FOUND
-#     assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'User not found'}
 
 
 def test_delete_user(client, user):
@@ -150,3 +150,31 @@ def test_update_integrity_error(client, user):
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Username or Email already exists'}
+
+
+def test_create_user_return_409_username_exists_ex01_aula_05(client, user):
+    response = client.post(
+        '/users/',
+        json={
+            'username': user.username,
+            'email': 'alice@example.com',
+            'password': 'secret',
+        }
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username already exists'}
+
+
+def test_create_user_return_409_email_exists_ex02_aula_05(client, user):
+    response = client.post(
+        '/users/',
+        json={
+            'username': 'alice',
+            'email': user.email,
+            'password': 'secret',
+        }
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Email already exists'}

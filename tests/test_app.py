@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from fastapi_zero.schemas import UserPublic
+from fastapi_zero.security import create_access_token
 
 
 def test_root_deve_retornar_ola_mundo(client):
@@ -19,12 +20,6 @@ def test_root_deve_retornar_ola_mundo(client):
     # assert
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'Olá mundo!'}
-
-
-# def test_exercicio_deve_retornar_html(client):
-#     response = client.get('/exercicio-html')
-#     assert response.status_code == HTTPStatus.OK
-#     assert '<h1> Olá Mundo </h1>' in response.text
 
 
 def test_create_user(client):
@@ -72,28 +67,6 @@ def test_update_user(client, user, token):
         'email': 'bob@example.com',
         'id': 1,
     }
-
-
-# Teste 404 para endpoint PUT
-# def test_update_user_not_found_ex01_aula_03(client):
-#     response = client.put(
-#         '/users/57',
-#         json={
-#             'username': 'rick',
-#             'email': 'rick@example.com',
-#             'password': 'secret',
-#         },
-#     )
-#     assert response.status_code == HTTPStatus.NOT_FOUND
-#     assert response.json() == {'detail': 'User not found'}
-
-
-# Teste 404 para endpoint DELETE
-# def test_delete_user_not_found_ex02_aula_03(client):
-#     response = client.delete('/users/57')
-
-#     assert response.status_code == HTTPStatus.NOT_FOUND
-#     assert response.json() == {'detail': 'User not found'}
 
 
 # Teste 200 para endpoint GET users/{id}
@@ -191,3 +164,29 @@ def test_get_token(client, user):
     assert response.status_code == HTTPStatus.OK
     assert token['token_type'] == 'Bearer'
     assert 'access_token' in token
+
+
+def test_get_user_not_found_ex01_aula_07(client):
+    data = {'mail': 'test'}
+    token = create_access_token(data)
+
+    response = client.delete(
+        '/users/1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
+
+
+def test_get_current_user_does_not_exists_ex02_aula_07(client):
+    data = {'sub': 'test@test'}
+    token = create_access_token(data)
+
+    response = client.delete(
+        '/users/1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}

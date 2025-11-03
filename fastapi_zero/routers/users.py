@@ -60,12 +60,13 @@ async def create_user(user: UserSchema, session: Session):
 @router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
 async def read_users(
     session: Session,
-    current_user: CurrentUser,
     filter_users: Annotated[FilterPage, Query()],
 ):
-    users = await session.scalars(
+    query = await session.scalars(
         select(User).limit(filter_users.limit).offset(filter_users.offset)
     )
+
+    users = query.all()
     return {'users': users}
 
 
@@ -86,7 +87,6 @@ async def update_user(
         current_user.username = user.username
         current_user.password = get_password_hash(user.password)
 
-        session.add(current_user)
         await session.commit()
         await session.refresh(current_user)
 

@@ -118,10 +118,7 @@ async def delete_user(
 # Endpoint GET para users/{id}
 @router.get('/{user_id}', response_model=UserPublic)
 async def read_user(user_id: int, session: Session):
-    user_db = await session.scalar(
-        select(User)
-        .where(User.id == user_id)
-    )
+    user_db = await session.scalar(select(User).where(User.id == user_id))
 
     if not user_db:
         raise HTTPException(
